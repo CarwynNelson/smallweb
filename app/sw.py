@@ -177,10 +177,8 @@ def index():
     domain = re.sub(r"^(www\.)?", "", domain)
 
     videoid = ""
-    is_youtube = 0
 
-    if "youtube.com" in short_url:
-        is_youtube = 1
+    if is_youtube:
         parsed_url = urlparse(url)
         videoid = parse_qs(parsed_url.query)["v"][0]
 
