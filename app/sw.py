@@ -27,6 +27,8 @@ from urllib.parse import urlparse
 from feedwerk.atom import AtomFeed, FeedEntry
 
 
+DEFAULT_URL = "https://blog.kagi.com/small-web"
+
 def time_ago(timestamp):
     delta = datetime.now() - timestamp
     seconds = delta.total_seconds()
@@ -138,16 +140,31 @@ def get_registered_domain(url):
             return ".".join(netloc_parts[:i]) + "." + possible_suffix
 
 
+@app.route("/next")
+def next_item():
+    global urls_cache, urls_yt_cache
+
+    url = request.args.get("url")
+    is_youtube = "yt" in request.args
+    cache = urls_yt_cache if is_youtube else urls_cache
+
+    if cache and len(cache):
+        url, _, _ = random.choice(cache)
+    else:
+        url = DEFAULT_URL
+
+    redirect_to = f"/?yt&url={url}" if is_youtube else f"/?url={url}"
+    return app.redirect(redirect_to, code=307)
+    
+
 @app.route("/")
 def index():
     global urls_cache, urls_yt_cache
 
     url = request.args.get("url")
+    is_youtube = "yt" in request.args
+    cache = urls_yt_cache if is_youtube else urls_cache
     title = None
-    if "yt" in request.args:
-        cache = urls_yt_cache
-    else:
-        cache = urls_cache
 
     if url is not None:
         http_url = url.replace("https://", "http://")
@@ -161,14 +178,11 @@ def index():
         )
 
     if title is None:
-        if cache and len(cache):
-            url, title, author = random.choice(cache)
-        else:
-            url, title, author = (
-                "https://blog.kagi.com/small-web",
-                "Nothing to see",
-                "Feed not active, try later",
-            )
+        query_params = request.args.copy()
+        query_string = "&".join(
+            f"{key}={value}" for key, value in query_params.items()
+        )
+        return app.redirect(f"/next?{query_string}", code=307)
 
     short_url = re.sub(r"^https?://(www\.)?", "", url)
     short_url = short_url.rstrip("/")
