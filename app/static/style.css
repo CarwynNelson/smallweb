@@ -293,25 +293,3 @@ svg {
     width:360px;
   }
 }
-
-
-.stumble-link button {
-    pointer-events: none;
-    opacity: 0.4;
-    animation: enableButton 0s forwards 3s;
-}
-
-
-#header {
-    pointer-events: none;
-    opacity: 0.85;
-    animation: enableButton 0s forwards 3s;
-}
-
-@keyframes enableButton {
-    to {
-      pointer-events: auto;
-      opacity: 1;
-    }
-  }
-
