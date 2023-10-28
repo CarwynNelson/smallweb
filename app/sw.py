@@ -132,23 +132,6 @@ def get_registered_domain(url):
         possible_suffix = ".".join(netloc_parts[i:])
         if possible_suffix in public_suffix_list:
             return ".".join(netloc_parts[:i]) + "." + possible_suffix
-
-
-@app.route("/next")
-def next_item():
-    global urls_cache, urls_yt_cache
-
-    url = request.args.get("url")
-    is_youtube = "yt" in request.args
-    cache = urls_yt_cache if is_youtube else urls_cache
-
-    if cache and len(cache):
-        url, _, _ = random.choice(cache)
-    else:
-        url = DEFAULT_URL
-
-    redirect_to = f"/?yt&url={url}" if is_youtube else f"/?url={url}"
-    return app.redirect(redirect_to, code=307)
     
 
 @app.route("/")
@@ -160,16 +143,20 @@ def index():
     cache = urls_yt_cache if is_youtube else urls_cache
     title = None
 
-    if url is not None:
-        http_url = url.replace("https://", "http://")
-        title, author = next(
-            (
-                (url_tuple[1], url_tuple[2])
-                for url_tuple in cache
-                if url_tuple[0] == url or url_tuple[0] == http_url
-            ),
-            (None, None),
-        )
+    if url is None:
+        random_url, _, _ = random.choice(cache)
+        redirect_to = f"?yt&url={random_url}" if is_youtube else f"?url={random_url}"
+        return app.redirect(redirect_to, code=307)
+
+    http_url = url.replace("https://", "http://")
+    title, author = next(
+        (
+            (url_tuple[1], url_tuple[2])
+            for url_tuple in cache
+            if url_tuple[0] == url or url_tuple[0] == http_url
+        ),
+        (None, None),
+    )
 
     if title is None:
         query_params = request.args.copy()
@@ -209,9 +196,12 @@ def index():
             "http://", "https://"
         )  # force https as http will not work inside https iframe anyway
 
+    next_url = random.choice(cache)[0]
+    next_url = f"?yt&url={next_url}" if is_youtube else f"?url={next_url}"
     return render_template(
         "index.html",
         url=url,
+        next_url=next_url,
         short_url=short_url,
         query_string=query_string,
         title=title,
