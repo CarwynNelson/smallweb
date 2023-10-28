@@ -37,6 +37,16 @@
     <iframe src="{{url}}"></iframe>
   </div>
   {% endif %}
+
+  <script>
+    let vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    window.addEventListener('resize', () => {
+      let vh = window.innerHeight;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+  </script>
 </body>
 
 </html>

@@ -57,8 +57,10 @@ body {
 }
 
 #content {
+  /* height: 100vh; */
+
   /* 52.4px is the height of the #header */
-  height: calc(100vh - 52.4px)
+  height: calc((var(--vh, 1vh) - 52.4px));
 }
 
 #content iframe {
